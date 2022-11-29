@@ -13,5 +13,5 @@ local app = (import 'app.libsonnet');
     namespace: std.extVar('DEVSPACE_NAMESPACE'),
     injectLabels: true,
   },
-  data: app,
+  data: app + std.extVar('PATCH'),  // { ... }
 }

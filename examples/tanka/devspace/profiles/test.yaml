@@ -1,0 +1,9 @@
+version: v2beta1
+profiles:
+  - name: my-test-profile
+    description: "my-test-profile"
+    patches:
+    - op: replace
+      path: deployments.nginx-test.tanka.externalCodeVariables.PATCH
+      value: |
+        (import 'local-vite-mixin.libsonnet')

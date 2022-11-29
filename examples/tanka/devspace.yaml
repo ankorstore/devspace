@@ -6,6 +6,9 @@ vars:
   TANKA_PATH:
     command: pwd
 
+imports:
+- path: ./devspace/profiles/test.yaml
+
 deployments:
   # Define a tanka deployment
   nginx-test:
@@ -16,6 +19,8 @@ deployments:
       environmentPath: environments/default
       externalStringVariables:
         IMAGE_NGINX: ${IMAGE_NGINX}
+      externalCodeVariables:
+        PATCH: '{}'
 
 dev:
   nginx-test-dev:
