@@ -744,9 +744,16 @@
           },
           "type": "array",
           "description": "TemplateArgs are additional arguments to pass to `helm template`"
+        },
+        "disableDependencyUpdate": {
+          "type": "boolean",
+          "description": "DisableDependencyUpdate disables helm dependencies update, default to false"
         }
       },
       "type": "object",
+      "required": [
+        "disableDependencyUpdate"
+      ],
       "description": "HelmConfig defines the specific helm options used during deployment"
     },
     "Image": {
@@ -1091,6 +1098,10 @@
           "type": "string",
           "description": "ServiceAccount the service account to use for the kaniko pod"
         },
+        "generateName": {
+          "type": "string",
+          "description": "GenerateName is the optional prefix that will be set to the generateName field of the build pod"
+        },
         "annotations": {
           "patternProperties": {
             ".*": {
@@ -1178,6 +1189,10 @@
           "type": "string",
           "description": "KubectlBinaryPath is the optional path where to find the kubectl binary"
         },
+        "inlineManifest": {
+          "type": "string",
+          "description": "InlineManifests is a block containing the manifest to deploy"
+        },
         "kustomize": {
           "type": "boolean",
           "description": "Kustomize can be used to enable kustomize instead of kubectl",
@@ -1196,6 +1211,14 @@
           "type": "string",
           "description": "KustomizeBinaryPath is the optional path where to find the kustomize binary",
           "group": "kustomize"
+        },
+        "patches": {
+          "items": {
+            "$ref": "#/$defs/PatchTarget"
+          },
+          "type": "array",
+          "description": "Patches are additional changes to the pod spec that should be applied",
+          "group": "modifications"
         }
       },
       "type": "object",
@@ -1218,6 +1241,10 @@
         "image": {
           "type": "string",
           "description": "Image of the local registry. Default is `registry:2.8.1`"
+        },
+        "buildKitImage": {
+          "type": "string",
+          "description": "BuildKitImage of the buildkit sidecar. Default is `moby/buildkit:master-rootless`"
         },
         "port": {
           "type": "integer",
@@ -1292,6 +1319,32 @@
         "path"
       ],
       "description": "PatchConfig describes a config patch and how it should be applied"
+    },
+    "PatchTarget": {
+      "properties": {
+        "target": {
+          "$ref": "#/$defs/Target",
+          "description": "Target describes where to apply a config patch"
+        },
+        "op": {
+          "type": "string",
+          "description": "Operation is the path operation to do. Can be either replace, add or remove"
+        },
+        "path": {
+          "type": "string",
+          "description": "Path is the config path to apply the patch to"
+        },
+        "value": {
+          "description": "Value is the value to use for this patch."
+        }
+      },
+      "type": "object",
+      "required": [
+        "target",
+        "op",
+        "path"
+      ],
+      "description": "PatchTarget describes a config patch and how it should be applied"
     },
     "PersistenceOptions": {
       "properties": {
@@ -1793,6 +1846,29 @@
       },
       "type": "object",
       "description": "SyncOnUpload defines the struct for the command that should be executed when files / folders are uploaded"
+    },
+    "Target": {
+      "properties": {
+        "apiVersion": {
+          "type": "string",
+          "description": "ApiVersion is the Kubernetes api of the target resource"
+        },
+        "kind": {
+          "type": "string",
+          "description": "Kind is the kind of the target resource (eg: Deployment, Service ...)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Name is the name of the target resource"
+        }
+      },
+      "type": "object",
+      "required": [
+        "apiVersion",
+        "kind",
+        "name"
+      ],
+      "description": "Target describes where to apply a config patch"
     },
     "Terminal": {
       "properties": {

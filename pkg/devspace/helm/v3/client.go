@@ -63,18 +63,18 @@ func (c *client) InstallChart(ctx devspacecontext.Context, releaseName string, r
 	}
 
 	// Chart settings
-	chartName := ""
+	chartPath := ""
 	if helmConfig.Chart.Source != nil {
-		chartName, err = dependencyutil.GetDependencyPath(ctx.WorkingDir(), helmConfig.Chart.Source)
+		dependencyPath, err := dependencyutil.GetDependencyPath(ctx.WorkingDir(), helmConfig.Chart.Source)
 		if err != nil {
 			return nil, err
 		}
 
-		chartName = filepath.Dir(chartName)
-		args = append(args, chartName)
+		chartPath = filepath.Dir(dependencyPath)
+		args = append(args, chartPath)
 	} else {
-		var chartRepo string
-		chartName, chartRepo = generic.ChartNameAndRepo(helmConfig)
+		chartName, chartRepo := generic.ChartNameAndRepo(helmConfig)
+		chartPath = filepath.Join(ctx.WorkingDir(), chartName)
 		args = append(args, chartName)
 		if chartRepo != "" {
 			args = append(args, "--repo", chartRepo)
@@ -108,15 +108,12 @@ func (c *client) InstallChart(ctx devspacecontext.Context, releaseName string, r
 	}
 
 	// Update dependencies if needed
-	chartPath := filepath.Join(ctx.WorkingDir(), chartName)
-	stat, err := os.Stat(chartPath)
-	if err == nil && stat.IsDir() {
-		_, err := c.genericHelm.Exec(ctx.WithWorkingDir(chartPath), []string{"dependency", "update"})
-		if err != nil {
-			ctx.Log().Warnf("error running helm dependency update: %v", err)
+	if helmConfig.DisableDependencyUpdate == nil || (helmConfig.DisableDependencyUpdate != nil && !*helmConfig.DisableDependencyUpdate) {
+		stat, err := os.Stat(chartPath)
+		if err == nil && stat.IsDir() {
+			args = append(args, "--dependency-update")
 		}
 	}
-
 	// Upgrade options
 	args = append(args, helmConfig.UpgradeArgs...)
 	output, err := c.genericHelm.Exec(ctx, args)
@@ -165,18 +162,18 @@ func (c *client) Template(ctx devspacecontext.Context, releaseName, releaseNames
 	}
 
 	// Chart settings
-	chartName := ""
+	chartPath := ""
 	if helmConfig.Chart.Source != nil {
-		chartName, err = dependencyutil.GetDependencyPath(ctx.WorkingDir(), helmConfig.Chart.Source)
+		dependencyPath, err := dependencyutil.GetDependencyPath(ctx.WorkingDir(), helmConfig.Chart.Source)
 		if err != nil {
 			return "", err
 		}
 
-		chartName = filepath.Dir(chartName)
-		args = append(args, chartName)
+		chartPath = filepath.Dir(dependencyPath)
+		args = append(args, chartPath)
 	} else {
-		var chartRepo string
-		chartName, chartRepo = generic.ChartNameAndRepo(helmConfig)
+		chartName, chartRepo := generic.ChartNameAndRepo(helmConfig)
+		chartPath = filepath.Join(ctx.WorkingDir(), chartName)
 		args = append(args, chartName)
 		if chartRepo != "" {
 			args = append(args, "--repo", chartRepo)
@@ -194,14 +191,12 @@ func (c *client) Template(ctx devspacecontext.Context, releaseName, releaseNames
 	}
 
 	// Update dependencies if needed
-	stat, err := os.Stat(chartName)
-	if err == nil && stat.IsDir() {
-		_, err := c.genericHelm.Exec(ctx.WithWorkingDir(chartName), []string{"dependency", "update"})
-		if err != nil {
-			ctx.Log().Warnf("error running helm dependency update: %v", err)
+	if helmConfig.DisableDependencyUpdate == nil || (helmConfig.DisableDependencyUpdate != nil && !*helmConfig.DisableDependencyUpdate) {
+		stat, err := os.Stat(chartPath)
+		if err == nil && stat.IsDir() {
+			args = append(args, "--dependency-update")
 		}
 	}
-
 	args = append(args, helmConfig.TemplateArgs...)
 	result, err := c.genericHelm.Exec(ctx, args)
 	if err != nil {
