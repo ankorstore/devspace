@@ -100,7 +100,7 @@ func (t *tankaEnvironmentImpl) BuildArgs(ctx devspacecontext.Context, arguments 
 			ctx.Log().Errorf("Error resolving variables: %v", err)
 			newArgs = append(newArgs, arg)
 		} else {
-			newArgs = append(newArgs, fmt.Sprint(newArg)
+			newArgs = append(newArgs, fmt.Sprint(newArg))
 		}
 
 	}
