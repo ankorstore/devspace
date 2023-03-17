@@ -48,6 +48,7 @@ func TestNewTankaEnvironment(t *testing.T) {
 				namespace:    "my-devspace-namespace",
 				tkBinaryPath: tkDefaultCommand,
 				jbBinaryPath: jbDefaultCommand,
+				targetFlags:  []string{"--target=*"},
 				rootDir:      "my",
 				args: []string{
 					"my/tanka/environment",
@@ -58,7 +59,6 @@ func TestNewTankaEnvironment(t *testing.T) {
 					"--ext-str=DEVSPACE_NAMESPACE=my-devspace-namespace",
 					"--ext-str=MY_STR_ARG=my-ext-var-string",
 					"--name=my-env-name",
-					"--target=*",
 					"--tla-code=true",
 					"--tla-str=my-tla-string",
 				},

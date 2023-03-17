@@ -93,20 +93,22 @@ func NewTankaEnvironment(config *latest.TankaConfig) TankaEnvironment {
 	}
 }
 
+func eval(ctx devspacecontext.Context, arg string) string {
+	resolver := runtimevar.NewRuntimeResolver(ctx.WorkingDir(), true)
+	_, newArg, err := resolver.FillRuntimeVariablesWithRebuild(ctx.Context(), arg, ctx.Config(), ctx.Dependencies())
+	if err != nil {
+		ctx.Log().Errorf("Error resolving variables: %v", err)
+		return arg
+	}
+	return fmt.Sprint(newArg)
+}
+
 // Build arguments with Runtime vars
 func (t *tankaEnvironmentImpl) BuildArgs(ctx devspacecontext.Context, arguments []string) []string {
 	var newArgs []string
-	resolver := runtimevar.NewRuntimeResolver(ctx.WorkingDir(), true)
 
 	for _, arg := range arguments {
-		_, newArg, err := resolver.FillRuntimeVariablesWithRebuild(ctx.Context(), arg, ctx.Config(), ctx.Dependencies())
-		if err != nil {
-			ctx.Log().Errorf("Error resolving variables: %v", err)
-			newArgs = append(newArgs, arg)
-		} else {
-			newArgs = append(newArgs, fmt.Sprint(newArg))
-		}
-
+		newArgs = append(newArgs, eval(ctx, arg))
 	}
 	return newArgs
 }
@@ -124,7 +126,11 @@ func (t *tankaEnvironmentImpl) Apply(ctx devspacecontext.Context) error {
 
 	applyArgs = t.BuildArgs(ctx, applyArgs)
 
-	t.Show(ctx, out)
+	err = t.Show(ctx, out)
+	if err != nil {
+		return err
+	}
+
 	if out.String() == "" {
 		ctx.Log().Warnf("Warning: No manifests detected. Skipping apply: %v", applyArgs)
 		return nil
@@ -135,7 +141,7 @@ func (t *tankaEnvironmentImpl) Apply(ctx devspacecontext.Context) error {
 	cmd := exec.CommandContext(ctx.Context(), t.tkBinaryPath, applyArgs...)
 	cmd.Stderr = out
 	cmd.Stdout = out
-	cmd.Dir = path.Join(ctx.WorkingDir(), t.rootDir)
+	cmd.Dir = path.Join(ctx.WorkingDir(), eval(ctx, t.rootDir))
 
 	err = cmd.Run()
 
@@ -160,7 +166,7 @@ func (t *tankaEnvironmentImpl) Diff(ctx devspacecontext.Context) (string, error)
 
 	ctx.Log().Debugf("Tanka diff arguments: %v", diffArgs)
 	cmd := exec.CommandContext(ctx.Context(), t.tkBinaryPath, diffArgs...)
-	cmd.Dir = path.Join(ctx.WorkingDir(), t.rootDir)
+	cmd.Dir = path.Join(ctx.WorkingDir(), eval(ctx, t.rootDir))
 
 	out, err := cmd.CombinedOutput()
 
@@ -179,7 +185,7 @@ func (t *tankaEnvironmentImpl) Show(ctx devspacecontext.Context, out io.Writer) 
 	cmd := exec.CommandContext(ctx.Context(), t.tkBinaryPath, showArgs...)
 	cmd.Stdout = out
 	cmd.Stderr = out
-	cmd.Dir = path.Join(ctx.WorkingDir(), t.rootDir)
+	cmd.Dir = path.Join(ctx.WorkingDir(), eval(ctx, t.rootDir))
 
 	return cmd.Run()
 }
@@ -195,7 +201,7 @@ func (t *tankaEnvironmentImpl) Prune(ctx devspacecontext.Context) error {
 	cmd := exec.CommandContext(ctx.Context(), t.tkBinaryPath, pruneArgs...)
 	cmd.Stdout = t.stdout
 	cmd.Stderr = t.stderr
-	cmd.Dir = path.Join(ctx.WorkingDir(), t.rootDir)
+	cmd.Dir = path.Join(ctx.WorkingDir(), eval(ctx, t.rootDir))
 
 	return cmd.Run()
 }
@@ -212,7 +218,7 @@ func (t *tankaEnvironmentImpl) Delete(ctx devspacecontext.Context) error {
 	cmd := exec.CommandContext(ctx.Context(), t.tkBinaryPath, deleteArgs...)
 	cmd.Stdout = t.stdout
 	cmd.Stderr = t.stderr
-	cmd.Dir = path.Join(ctx.WorkingDir(), t.rootDir)
+	cmd.Dir = path.Join(ctx.WorkingDir(), eval(ctx, t.rootDir))
 
 	return cmd.Run()
 }
@@ -224,12 +230,12 @@ func (t *tankaEnvironmentImpl) Install(ctx devspacecontext.Context) error {
 	var err error = nil
 	installArgs := []string{"install"}
 
-	GetOnce("install", path.Join(ctx.WorkingDir(), t.rootDir)).Do(func() {
+	GetOnce("install", path.Join(ctx.WorkingDir(), eval(ctx, t.rootDir))).Do(func() {
 		ctx.Log().Debugf("Jb install")
 		cmd := exec.CommandContext(ctx.Context(), t.jbBinaryPath, installArgs...)
 		cmd.Stdout = t.stdout
 		cmd.Stderr = t.stderr
-		cmd.Dir = path.Join(ctx.WorkingDir(), t.rootDir)
+		cmd.Dir = path.Join(ctx.WorkingDir(), eval(ctx, t.rootDir))
 		err = cmd.Run()
 	})
 
@@ -240,12 +246,12 @@ func (t *tankaEnvironmentImpl) Update(ctx devspacecontext.Context) error {
 	var err error = nil
 	installArgs := []string{"update"}
 
-	GetOnce("update", path.Join(ctx.WorkingDir(), t.rootDir)).Do(func() {
+	GetOnce("update", path.Join(ctx.WorkingDir(), eval(ctx, t.rootDir))).Do(func() {
 		ctx.Log().Debugf("Jb update")
 		cmd := exec.CommandContext(ctx.Context(), t.jbBinaryPath, installArgs...)
 		cmd.Stdout = t.stdout
 		cmd.Stderr = t.stderr
-		cmd.Dir = path.Join(ctx.WorkingDir(), t.rootDir)
+		cmd.Dir = path.Join(ctx.WorkingDir(), eval(ctx, t.rootDir))
 		err = cmd.Run()
 	})
 
