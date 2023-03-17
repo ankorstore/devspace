@@ -31,7 +31,6 @@ GO_BUILD_LDFLAGS="-s -w -X main.commitHash=${COMMIT_HASH} -X main.buildDate=${DA
 
 if [[ -z "${DEVSPACE_BUILD_PLATFORMS}" ]]; then
     DEVSPACE_BUILD_PLATFORMS="linux darwin"
-    DEVSPACE_BUILD_PLATFORMS="darwin"
 fi
 
 if [[ -z "${DEVSPACE_BUILD_ARCHS}" ]]; then
