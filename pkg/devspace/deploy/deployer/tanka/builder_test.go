@@ -8,6 +8,10 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/loft-sh/devspace/pkg/devspace/config"
+	"github.com/loft-sh/devspace/pkg/devspace/config/constants"
+	"github.com/loft-sh/devspace/pkg/devspace/config/localcache"
+	"github.com/loft-sh/devspace/pkg/devspace/config/remotecache"
 	"github.com/loft-sh/devspace/pkg/devspace/config/versions/latest"
 	devspacecontext "github.com/loft-sh/devspace/pkg/devspace/context"
 	"github.com/loft-sh/devspace/pkg/util/log"
@@ -91,7 +95,17 @@ func TestNewTankaEnvironment(t *testing.T) {
 }
 
 func getCtx() devspacecontext.Context {
-	return devspacecontext.NewContext(context.Background(), nil, &log.DiscardLogger{})
+	cache := localcache.New(constants.DefaultCacheFolder)
+
+	conf := config.NewConfig(map[string]interface{}{},
+		map[string]interface{}{},
+		&latest.Config{},
+		cache,
+		&remotecache.RemoteCache{},
+		map[string]interface{}{},
+		constants.DefaultConfigPath)
+
+	return devspacecontext.NewContext(context.Background(), nil, &log.DiscardLogger{}).WithConfig(conf)
 }
 
 func newEchoTankaEnv() (*tankaEnvironmentImpl, *bytes.Buffer) {

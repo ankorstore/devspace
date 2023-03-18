@@ -105,7 +105,7 @@ func eval(ctx devspacecontext.Context, arg string) string {
 
 // Build arguments with Runtime vars
 func (t *tankaEnvironmentImpl) BuildArgs(ctx devspacecontext.Context, arguments []string) []string {
-	var newArgs []string
+	newArgs := []string{}
 
 	for _, arg := range arguments {
 		newArgs = append(newArgs, eval(ctx, arg))
