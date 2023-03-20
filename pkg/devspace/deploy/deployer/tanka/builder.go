@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -114,7 +113,7 @@ func NewTankaEnvironment(config *latest.TankaConfig) TankaEnvironment {
 
 // Given a tkPath, look for the root of Tanka project based on jsonnetfile.json file existence
 func searchTankaRootDir(tkPath string) (string, error) {
-	files, err := ioutil.ReadDir(tkPath)
+	files, err := os.ReadDir(tkPath)
 	if err != nil {
 		log.Fatalf("Error reading %v: %v", tkPath, err)
 	}
@@ -130,7 +129,7 @@ func searchTankaRootDir(tkPath string) (string, error) {
 		log.Fatalf("Error getting absolute path for %v: %v", tkPath, err)
 	}
 	if filepath.Join(tkPathAbs, "..") == tkPathAbs { // Reached the root of the filesystem
-		return "", fmt.Errorf("Could not find root of Tanka project looking for a 'jsonnetfile.json' file")
+		return "", fmt.Errorf("could not find root of Tanka project looking for a 'jsonnetfile.json' file")
 	}
 	return searchTankaRootDir(filepath.Join(tkPath, ".."))
 }
