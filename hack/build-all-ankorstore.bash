@@ -40,6 +40,11 @@ fi
 # Create the release directory
 mkdir -p "${DEVSPACE_ROOT}/release"
 
+# Move ui.tar.gz to releases
+echo "Moving ui"
+mv ui.tar.gz "${DEVSPACE_ROOT}/release/ui.tar.gz"
+shasum -a 256 "${DEVSPACE_ROOT}/release/ui.tar.gz" > "${DEVSPACE_ROOT}/release/ui.tar.gz".sha256
+
 # build devspace helper
 echo "Building devspace helper"
 GOARCH=amd64 GOOS=linux go build -ldflags "-s -w -X github.com/loft-sh/devspace/helper/cmd.version=${VERSION}" -o "${DEVSPACE_ROOT}/release/devspacehelper" helper/main.go
