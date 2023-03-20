@@ -19,8 +19,8 @@ import (
 var version string
 var rawVersion string
 
-var githubSlug = "devspace-sh/devspace"
-var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+`)
+var githubSlug = "ankorstore/devspace"
+var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+-aks.\d`)
 
 func eraseVersionPrefix(version string) (string, error) {
 	indices := reVersion.FindStringIndex(version)
