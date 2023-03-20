@@ -21,8 +21,41 @@ on:
       - ".github/workflows/release.yaml"
 
 jobs:
+  release-ui:
+    if: startsWith(github.ref, 'refs/tags/v') == true
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 12
+          registry-url: https://registry.npmjs.org/
+      - id: get_version
+        run: |
+          RELEASE_VERSION=$(echo $GITHUB_REF | sed -nE 's!refs/tags/!!p')
+          echo "::set-output name=release_version::$RELEASE_VERSION"
+      - name: Cache node modules
+        uses: actions/cache@v1
+        with:
+          path: ui/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/ui/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Build UI
+        env:
+          VERSION: ${{ steps.get_version.outputs.release_version }}
+          NPM_CONFIG_GLOBALCONFIG: "dist/npm/config/npmrc"
+          NPM_REGISTRY_TOKEN: ${{ secrets.JF_NPM_TOKEN }}
+          CI: "false"
+        run: ./hack/build-ui.bash
+      - name: Upload ui tar
+        uses: actions/upload-artifact@v2
+        with:
+          name: ui-tar
+          path: release/ui.tar.gz
   release:
     if: startsWith(github.ref, 'refs/tags/v') == true
+    needs: [ release-ui ]
     runs-on: macos-11
     steps:
       - name: Set up Go
