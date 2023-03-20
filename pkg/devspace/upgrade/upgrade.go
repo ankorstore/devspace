@@ -2,10 +2,11 @@ package upgrade
 
 import (
 	"fmt"
-	"github.com/loft-sh/devspace/pkg/devspace/env"
 	"os"
 	"regexp"
 	"sync"
+
+	"github.com/loft-sh/devspace/pkg/devspace/env"
 
 	"github.com/pkg/errors"
 
@@ -20,7 +21,7 @@ var version string
 var rawVersion string
 
 var githubSlug = "ankorstore/devspace"
-var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+-aks.\d`)
+var reVersion = regexp.MustCompile(`\d+\.\d+\.\d+(-aks.\d)?`)
 
 func eraseVersionPrefix(version string) (string, error) {
 	indices := reVersion.FindStringIndex(version)
