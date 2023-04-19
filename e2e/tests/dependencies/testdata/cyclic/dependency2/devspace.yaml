@@ -4,7 +4,7 @@ dependencies:
   dependency:
     path: ../dependency
   root:
-    git: https://github.com/devspace-sh/devspace.git
+    git: https://github.com/ankorstore/devspace.git
     subPath: e2e/tests/dependencies/testdata/cyclic
 
 deployments:
